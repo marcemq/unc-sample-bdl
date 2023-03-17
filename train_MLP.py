@@ -54,15 +54,19 @@ def main():
     for epoch in range(EPOCHS):
         batch_train_loss = []
         for x_train, y_train in batched_train_data:
+            # Send batch to device
             x_train = x_train.to(device).reshape((len(x_train),-1))
             y_train = y_train.to(device).reshape((len(x_train),-1))
             model.train()
+            # forward pass
             yhat = model(x_train)
             loss = loss_fn(yhat, y_train)
-            
+            # backward pass
             optimizer.zero_grad()
             loss.backward()
+            # update weights
             optimizer.step()
+            # save loss per batch
             batch_train_loss.append(loss.item())
         training_losses.append(np.mean(batch_train_loss))
 
