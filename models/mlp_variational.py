@@ -9,9 +9,9 @@ class MLP_gaussian(nn.Module):
         self.sigmoid1 = nn.Sigmoid()
         self.fc2 = nn.Linear(hidden_dim, hidden_dim)
         self.sigmoid2 = nn.Sigmoid()
-        self.fc3 = nn.Linear(hidden_dim, hidden_dim)
-        self.sigmoid3 = nn.Sigmoid()
-        self.fc4 = nn.Linear(hidden_dim, output_size)
+        self.fc3 = nn.Linear(hidden_dim, output_size)
+        # AR more layers and more neurons per layer
+        # get two values, and compute them to get mean and sdv
 
     def forward(self, x):
         '''Forward pass'''
@@ -20,6 +20,5 @@ class MLP_gaussian(nn.Module):
         out = self.fc2(out)
         out = self.sigmoid2(out)
         out = self.fc3(out)
-        out = self.sigmoid3(out)
-        out = self.fc4(out)
         return out
+    

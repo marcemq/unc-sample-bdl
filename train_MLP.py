@@ -1,15 +1,15 @@
 import torch
-import logging
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 from models.mlp_gaussian import MLP_gaussian
+from matplotlib import pyplot as plt
 
 # Fixed Hyperparameters
-BATCH_SIZE = 10
-LEARNING_RATE = 1e-4
-EPOCHS = 5
+BATCH_SIZE = 20
+LEARNING_RATE = 1e-3
+EPOCHS = 300
 
 def getDatasets():
     data = np.genfromtxt("data.csv", dtype=float, delimiter=',', names=True) 
@@ -26,52 +26,73 @@ def getDatasets():
     batched_val_data = DataLoader(dataset=val_data, batch_size=BATCH_SIZE, shuffle=True)
     return batched_train_data, batched_val_data
 
-def main():
+def plot(x, y_gt, y_pred):
+    plt.scatter(x, y_gt, marker ='x', color='blue', s=10, label='y_GT' )
+    plt.scatter(x, y_pred, marker ='x', color='green', s=10, label='y_pred' )
+    plt.xlabel('x')
+    plt.ylabel('f(x)')
+    plt.title(r'$f(x) = x + 0.3\sin(2\pi(x+e)) + 0.3\sin(4\pi(x+e)) + e $')
+    plt.show()
 
+def main():
     # set fixed random seed
     torch.manual_seed(42)
     
     # Check current device to work with
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
+    # Get batched datasets ready to iterate 
     batched_train_data, batched_val_data = getDatasets()
+    # model definition
+    model = MLP_gaussian(1,200,1).to(device)
 
-    model = MLP_gaussian(1,10,1).to(device)
     loss_fn = nn.MSELoss(reduction='mean')
     optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
 
     training_losses = []
     validation_losses = []
-
+    # Training
     for epoch in range(EPOCHS):
-        for x_batch, y_batch in batched_train_data:
-            x_batch = x_batch.to(device)
-            y_batch = y_batch.to(device)
+        batch_train_loss = []
+        for x_train, y_train in batched_train_data:
+            x_train = x_train.to(device).reshape((len(x_train),-1))
+            y_train = y_train.to(device).reshape((len(x_train),-1))
             model.train()
-            yhat = model(x_batch)
-            loss = loss_fn(yhat, y_batch)
+            yhat = model(x_train)
+            loss = loss_fn(yhat, y_train)
             
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            training_losses.append(loss.item())
-
-        # Print loss in the epoch loop only
-        print(f"Epoch: {epoch} | Training loss: {np.mean(training_losses):.2f}")
-
+            batch_train_loss.append(loss.item())
+        training_losses.append(np.mean(batch_train_loss))
 
         with torch.no_grad():
+            batch_val_loss = []
             for x_val, y_val in batched_val_data:
-                x_val = x_val.to(device)
-                y_val = y_val.to(device)
+                x_val = x_val.to(device).reshape((len(x_val),-1))
+                y_val = y_val.to(device).reshape((len(x_val),-1))
                 model.eval()
                 yhat = model(x_val)
                 val_loss = loss_fn(y_val, yhat)
-                validation_losses.append(val_loss.item())
+                batch_val_loss.append(val_loss.item())
+            validation_losses.append(np.mean(batch_val_loss))
+    
+        if (epoch+1) % 10 == 0:
+            print(f"[{epoch+1}] Training loss: {training_losses[epoch]:.4f}\t Validation loss: {validation_losses[epoch]:.4f}")
 
-        print(f"[{epoch+1}] Training loss: {np.mean(training_losses):.3f}\t Validation loss: {np.mean(validation_losses):.3f}")
-
-     
+    # inference
+    x, y_gt, y_pred = [], [], []
+    with torch.no_grad():
+        for xi, yi in batched_train_data:
+            xi = xi.to(device).reshape((len(xi),-1))
+            yi = yi.to(device).reshape((len(xi),-1))
+            y_hat = model(xi)
+            #print("x,y,yhat:", np.concatenate([xi, yi, y_hat], axis=1))
+            x.append(xi.numpy())
+            y_gt.append(yi.numpy())
+            y_pred.append(y_hat.numpy())
+    
+    plot(x, y_gt, y_pred)
 
 if __name__ == "__main__":
     main()
