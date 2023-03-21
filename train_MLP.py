@@ -43,7 +43,7 @@ def main():
     # Get batched datasets ready to iterate 
     batched_train_data, batched_val_data = getDatasets()
     # model definition
-    model = MLP_gaussian2(1,200,1).to(device)
+    model = MLP_gaussian2(1,500,1).to(device)
 
     loss_fn = nn.MSELoss(reduction='mean')
     optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
@@ -91,7 +91,6 @@ def main():
             xi = xi.to(device).reshape((len(xi),-1))
             yi = yi.to(device).reshape((len(xi),-1))
             y_hat = model(xi)
-            #print("x,y,yhat:", np.concatenate([xi, yi, y_hat], axis=1))
             x.append(xi.numpy())
             y_gt.append(yi.numpy())
             y_pred.append(y_hat.numpy())
