@@ -15,8 +15,8 @@ def saveData(x, y, fileName="data.csv"):
     np.savetxt(fileName, data, delimiter=',', header="x,y")
 
 if __name__ == "__main__":
-    x, y = f(samples=100)
-    plt.scatter(x, y, marker ='x', color='blue', label='MyPoints' )
+    x, y = f(samples=200)
+    plt.scatter(x, y, marker ='x', color='blue', s=10)
     plt.xlabel('x')
     plt.ylabel('f(x)')
     plt.title(r'$f(x) = x + 0.3\sin(2\pi(x+e)) + 0.3\sin(4\pi(x+e)) + e $')
