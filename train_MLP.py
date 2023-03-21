@@ -3,13 +3,13 @@ import numpy as np
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
-from models.mlp_gaussian import MLP_gaussian
+from models.mlp_gaussian import MLP_gaussian1, MLP_gaussian2
 from matplotlib import pyplot as plt
 
 # Fixed Hyperparameters
-BATCH_SIZE = 20
+BATCH_SIZE = 40
 LEARNING_RATE = 1e-3
-EPOCHS = 300
+EPOCHS = 500
 
 def getDatasets():
     data = np.genfromtxt("data.csv", dtype=float, delimiter=',', names=True) 
@@ -43,7 +43,7 @@ def main():
     # Get batched datasets ready to iterate 
     batched_train_data, batched_val_data = getDatasets()
     # model definition
-    model = MLP_gaussian(1,200,1).to(device)
+    model = MLP_gaussian2(1,200,1).to(device)
 
     loss_fn = nn.MSELoss(reduction='mean')
     optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
