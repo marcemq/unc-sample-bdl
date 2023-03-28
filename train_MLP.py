@@ -56,7 +56,7 @@ def main():
         for x_train, y_train in batched_train_data:
             # Send batch to device
             x_train = x_train.to(device).reshape((len(x_train),-1))
-            y_train = y_train.to(device).reshape((len(x_train),-1))
+            y_train = y_train.to(device).reshape((len(y_train),-1))
             model.train()
             # forward pass
             yhat = model(x_train)
@@ -74,7 +74,7 @@ def main():
             batch_val_loss = []
             for x_val, y_val in batched_val_data:
                 x_val = x_val.to(device).reshape((len(x_val),-1))
-                y_val = y_val.to(device).reshape((len(x_val),-1))
+                y_val = y_val.to(device).reshape((len(y_val),-1))
                 model.eval()
                 yhat = model(x_val)
                 val_loss = loss_fn(y_val, yhat)
@@ -89,7 +89,7 @@ def main():
     with torch.no_grad():
         for xi, yi in batched_train_data:
             xi = xi.to(device).reshape((len(xi),-1))
-            yi = yi.to(device).reshape((len(xi),-1))
+            yi = yi.to(device).reshape((len(yi),-1))
             y_hat = model(xi)
             x.append(xi.numpy())
             y_gt.append(yi.numpy())
