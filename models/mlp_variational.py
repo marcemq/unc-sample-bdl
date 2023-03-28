@@ -41,10 +41,21 @@ class MLP_variational(nn.Module):
             kl_sum += kl
             pred_.append(pred)
             kl_.append(kl_sum)
-
+        # ASK does this means are the actual: MC sample drawn from the variational posterior? eq2
         y_pred    = torch.mean(torch.stack(pred_), dim=0)
         kl_loss = torch.mean(torch.stack(kl_), dim=0)
         # compute nll loss
         nll_loss = self.loss_fun(pred, y_gt)
         return y_pred, nll_loss, kl_loss
     
+    def predict(self, x):
+        kl_sum = 0
+        # ASK: just to confirm, below it's valid
+        # is the  LinearReparameterization that set mu and sigma and generates Z, so it pass over the decoder
+        #  verify this in bayesian torch side
+        x, kl = self.linearRep1(x)
+        kl_sum += kl
+        x = self.relu1(x)
+        pred, kl = self.linearRep2(x)
+        kl_sum += kl
+        return pred, kl_sum

@@ -12,6 +12,8 @@ LEARNING_RATE = 1e-4
 EPOCHS = 100
 MC_ITS=20
 
+# TODO: this function should return train, val and test batchs
+# TODO: debug error due to BATCH_SIZE, test with 50 to see the reported error
 def getDatasets():
     data = np.genfromtxt("data.csv", dtype=float, delimiter=',', names=True) 
     x_tensor = torch.from_numpy(data["x"]).float()
@@ -47,8 +49,25 @@ def main():
     model = MLP_variational(1,100,1).to(device)
     # model training
     train_variational(model, device, batched_train_data, batched_val_data, mc_its=MC_ITS)
-    # model inference
+    # model inference and plot
+    model.eval()
+    x, y_gt, y_pred = inference(model, device, batched_val_data)
+    plot(x, y_gt, y_pred)
 
+def inference(model, device, test_data):
+    x, y_gt, y_pred = [], [], []
+    for batch_idx, (xtest, ytest_gt) in enumerate(test_data):
+        pred_sum = 0
+        for mc_run in range(MC_ITS):
+            xtest = xtest.to(device).reshape((len(xtest),-1))
+            ytest_gt = ytest_gt.reshape((len(ytest_gt),-1))
+            pred, kl = model.predict(xtest)
+            pred_sum += pred
+        x.append(xtest.numpy())
+        y_gt.append(ytest_gt.numpy())
+        y_pred.append((pred_sum/MC_ITS).numpy())
+        # AKS should I comput the sdt fro the prediction and reporte it bacK?
+    return x, y_gt, y_pred 
 
 def train_variational(model, device, train_data, val_data, mc_its=10):
     optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
@@ -102,6 +121,14 @@ def plot_losses(list_loss_train, list_loss_val):
     plt.xlabel("Epochs")
     plt.ylabel("Loss")
     plt.legend()
+
+def plot(x, y_gt, y_pred):
+    plt.scatter(x, y_gt, marker ='x', color='blue', s=10, label='y_GT' )
+    plt.scatter(x, y_pred, marker ='x', color='green', s=10, label='y_pred' )
+    plt.xlabel('x')
+    plt.ylabel('f(x)')
+    plt.title(r'$f(x) = x + 0.3\sin(2\pi(x+e)) + 0.3\sin(4\pi(x+e)) + e $')
+    plt.show()
 
 if __name__ == "__main__":
     main()
