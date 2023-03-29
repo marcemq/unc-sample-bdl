@@ -30,10 +30,10 @@ class MLP_variational(nn.Module):
         '''Forward pass'''
         pred_ = []
         kl_ = []
-
+        # error here in size
+        # x here is a batch of inputs
         for mc_run in range(mc_its):
             kl_sum = 0
-
             x, kl = self.linearRep1(x)
             kl_sum += kl
             x = self.relu1(x)
@@ -45,14 +45,15 @@ class MLP_variational(nn.Module):
         y_pred    = torch.mean(torch.stack(pred_), dim=0)
         kl_loss = torch.mean(torch.stack(kl_), dim=0)
         # compute nll loss
-        nll_loss = self.loss_fun(pred, y_gt)
+        nll_loss = self.loss_fun(y_pred, y_gt)
         return y_pred, nll_loss, kl_loss
     
     def predict(self, x):
         kl_sum = 0
         # ASK: just to confirm, below it's valid
         # is the  LinearReparameterization that set mu and sigma and generates Z, so it pass over the decoder
-        #  verify this in bayesian torch side
+        # AR: verify this in bayesian torch side
+        # TODO: num_samples to be return at the end --- only one gets return now
         x, kl = self.linearRep1(x)
         kl_sum += kl
         x = self.relu1(x)
