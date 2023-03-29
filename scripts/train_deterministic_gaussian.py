@@ -4,18 +4,18 @@ sys.path.append('.')
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
-from models.mlp_gaussian import MLP1, MLP2 
+from models.mlp_gaussian import MLP_gaussian
 from matplotlib import pyplot as plt
 from utils.plot_utils import plotComplete
 from utils.data_utils import getDatasetsTrainVal, getDatasetTestUnseen
-from utils.train_utils import train_deterministic, inference_deterministic
+from utils.train_utils import train_deterministic_gaussian, inference_deterministic_gaussian
 
 #sys.path.append('.')
 
 # Fixed Hyperparameters
 BATCH_SIZE    = 40
 LEARNING_RATE = 1e-3
-EPOCHS        = 6000
+EPOCHS        = 10000
 
 def main():
     # set fixed random seed
@@ -27,14 +27,19 @@ def main():
     batched_train_data, batched_val_data = getDatasetsTrainVal(BATCH_SIZE)
     batched_test_data = getDatasetTestUnseen(BATCH_SIZE)
     # model definition
-    model = MLP2(1,300,1).to(device)
+    model = MLP_gaussian(1,300,1).to(device)
     # model training
-    train_deterministic(model, device, batched_train_data, batched_val_data, LEARNING_RATE, EPOCHS)
+    train_deterministic_gaussian(model, device, batched_train_data, batched_val_data, LEARNING_RATE, EPOCHS)
+
+    # TODO: transform this model in  a model to stimate aleactoric uncertanity
+    # output: 2
+    # loss: log verosimitud of gaussian //Kendall paper, eq2
+    # ideally the stimate varianza should be the one we´ve used to generate data
 
     # model inference and plot
     model.eval()
-    x, y_gt, y_pred = inference_deterministic(model, device, batched_train_data)
-    xU, yU_gt, yU_pred = inference_deterministic(model, device, batched_test_data)
+    x, y_gt, y_pred = inference_deterministic_gaussian(model, device, batched_train_data)
+    xU, yU_gt, yU_pred = inference_deterministic_gaussian(model, device, batched_test_data)
     plotComplete(x, y_gt, y_pred, xU, yU_gt, yU_pred)
     plt.show()
 
