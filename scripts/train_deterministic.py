@@ -31,14 +31,10 @@ def main():
     # model training
     train_deterministic(model, device, batched_train_data, batched_val_data, LEARNING_RATE, EPOCHS)
 
-    # inference
-    # ASK: wil be worth it to generate data in the range in between?
-    # like data completely never spot before, or will be the same as a test batch data?
     # TODO: transform this model in  a model to stimate aleactoric uncertanity
     # output: 2
     # loss: log verosimitud of gaussian //Kendall paper, eq2
     # ideally the stimate varianza should be the one we´ve used to generate data
-    # use it ffor data in 1-1.5 range
 
     # model inference and plot
     model.eval()
