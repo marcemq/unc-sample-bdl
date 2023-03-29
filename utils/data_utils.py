@@ -4,8 +4,8 @@ from torch.utils.data import DataLoader, TensorDataset, random_split
 
 # TODO: this function should return train, val and test batchs
 # TODO: debug error due to BATCH_SIZE, test with 50 to see the reported error
-def getDatasets(BATCH_SIZE):
-    data = np.genfromtxt("data.csv", dtype=float, delimiter=',', names=True) 
+def getDatasetsTrainVal(BATCH_SIZE):
+    data = np.genfromtxt("data/data.csv", dtype=float, delimiter=',', names=True) 
     x_tensor = torch.from_numpy(data["x"]).float()
     y_tensor = torch.from_numpy(data["y"]).float()
 
@@ -18,3 +18,12 @@ def getDatasets(BATCH_SIZE):
     batched_train_data = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
     batched_val_data = DataLoader(dataset=val_data, batch_size=BATCH_SIZE, shuffle=True)
     return batched_train_data, batched_val_data
+
+def getDatasetTestUnseen(BATCH_SIZE):
+    data = np.genfromtxt("data/dataUnseen.csv", dtype=float, delimiter=',', names=True) 
+    x_tensor = torch.from_numpy(data["x"]).float()
+    y_tensor = torch.from_numpy(data["y"]).float()
+
+    test_data = TensorDataset(x_tensor, y_tensor)
+    batched_test_data = DataLoader(dataset=test_data, batch_size=BATCH_SIZE, shuffle=True)
+    return batched_test_data

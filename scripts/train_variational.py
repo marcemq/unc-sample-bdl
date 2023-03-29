@@ -6,7 +6,7 @@ sys.path.append('.')
 from models.mlp_variational import MLP_variational
 from utils.train_utils import train_variational, inference_variational
 from utils.plot_utils import plot
-from utils.data_utils import getDatasets
+from utils.data_utils import getDatasetsTrainVal
 from matplotlib import pyplot as plt
 
 BATCH_SIZE = 40
@@ -21,7 +21,7 @@ def main():
     # Check current device to work with
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     # Get batched datasets ready to iterate 
-    batched_train_data, batched_val_data = getDatasets(BATCH_SIZE)
+    batched_train_data, batched_val_data = getDatasetsTrainVal(BATCH_SIZE)
     # model definition, output 2, one for mean and second for std
     model = MLP_variational(1, 100, 1).to(device)
     # model training
