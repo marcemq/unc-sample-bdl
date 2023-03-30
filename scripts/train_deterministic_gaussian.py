@@ -15,7 +15,7 @@ from utils.train_utils import train_deterministic_gaussian, inference_determinis
 # Fixed Hyperparameters
 BATCH_SIZE    = 40
 LEARNING_RATE = 1e-3
-EPOCHS        = 10000
+EPOCHS        = 6000
 
 def main():
     # set fixed random seed
@@ -24,17 +24,12 @@ def main():
     # Check current device to work with
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     # Get batched datasets ready to iterate
-    batched_train_data, batched_val_data = getDatasetsTrainVal(BATCH_SIZE)
-    batched_test_data = getDatasetTestUnseen(BATCH_SIZE)
+    batched_train_data, batched_val_data = getDatasetsTrainVal(BATCH_SIZE, dataFileName="dataS03.csv")
+    batched_test_data = getDatasetTestUnseen(BATCH_SIZE, dataFileName="dataUnseenS03.csv")
     # model definition
     model = MLP_gaussian(1,300,1).to(device)
     # model training
     train_deterministic_gaussian(model, device, batched_train_data, batched_val_data, LEARNING_RATE, EPOCHS)
-
-    # TODO: transform this model in  a model to stimate aleactoric uncertanity
-    # output: 2
-    # loss: log verosimitud of gaussian //Kendall paper, eq2
-    # ideally the stimate varianza should be the one we´ve used to generate data
 
     # model inference and plot
     model.eval()

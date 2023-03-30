@@ -3,7 +3,8 @@ from torch import nn
 
 def gaussianLikelihood(y, pred, sigma):
     loss = (1/(2*sigma*sigma))*torch.norm(y-pred, p=2) + 0.5* torch.log(sigma*sigma)
-    return loss
+    # ASK: not sure about return the sum of all, is loke condensing the inf about all inputs from a batch
+    return loss.sum()
 
 class MLP1(nn.Module):
     def __init__(self, input_size, hidden_dim, output_size):
@@ -52,6 +53,5 @@ class MLP_gaussian(nn.Module):
         pred, sigma = out[:, :1], out[:, 1:]
         # compute loss
         loss = gaussianLikelihood(y_gt, pred, sigma)
-        print(loss.shape)
         return pred, sigma, loss
             
