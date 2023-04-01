@@ -1,10 +1,9 @@
 import torch
 from torch import nn
 
-def gaussianLikelihood(y, pred, sigma):
-    loss = (1/(2*sigma*sigma))*torch.norm(y-pred, p=2) + 0.5* torch.log(sigma*sigma)
-    # ASK: not sure about return the sum of all, is loke condensing the inf about all inputs from a batch
-    return loss.sum()
+def gaussianLikelihood(y, y_hat, sigma):
+    loss = (1/(2*sigma*sigma))*torch.norm(y-y_hat, p=2) + 0.5* torch.log(sigma*sigma)
+    return torch.mean(loss)
 
 class MLP1(nn.Module):
     def __init__(self, input_size, hidden_dim, output_size):
@@ -50,8 +49,10 @@ class MLP_gaussian(nn.Module):
         out = self.fc1(x)
         out = self.activation(out)
         out = self.fc2(out)
-        pred, sigma = out[:, :1], out[:, 1:]
+        pred_mean, rho = out[:, :1], out[:, 1:]
+        # Sigma reparametrization from Weight Uncertainty in NN
+        sigma = torch.log1p(torch.exp(rho))
         # compute loss
-        loss = gaussianLikelihood(y_gt, pred, sigma)
-        return pred, sigma, loss
+        loss = gaussianLikelihood(y_gt, pred_mean, sigma)
+        return pred_mean, sigma, loss
             

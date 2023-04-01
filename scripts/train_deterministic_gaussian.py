@@ -15,7 +15,7 @@ from utils.train_utils import train_deterministic_gaussian, inference_determinis
 # Fixed Hyperparameters
 BATCH_SIZE    = 40
 LEARNING_RATE = 1e-3
-EPOCHS        = 6000
+EPOCHS        = 10000
 
 def main():
     # set fixed random seed
