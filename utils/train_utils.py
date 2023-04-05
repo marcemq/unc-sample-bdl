@@ -129,7 +129,9 @@ def inference_deterministic(model, device, test_data):
             x.extend(xi.cpu().numpy().tolist())
             y_gt.extend(yi.cpu().numpy().tolist())
             y_pred.extend(y_hat.cpu().numpy().tolist())
-    return x, y_gt, y_pred
+
+    infr_data = np.concatenate([x, y_gt, y_pred], axis=1)
+    return infr_data
 
 def train_deterministic_gaussian(model, device, train_data, val_data, LEARNING_RATE, EPOCHS, show_losses_plot=True):
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, betas=(0.9,0.999))
@@ -173,13 +175,16 @@ def train_deterministic_gaussian(model, device, train_data, val_data, LEARNING_R
     plt.close()
 
 def inference_deterministic_gaussian(model, device, test_data):
-    x, y_gt, y_pred = [], [], []
+    x, y_gt, y_pred, sigma = [], [], [], []
     with torch.no_grad():
         for xi, yi in test_data:
             xi = xi.to(device).reshape((len(xi),-1))
             yi = yi.to(device).reshape((len(yi),-1))
-            y_hat, sigma, _ = model(xi, yi)
+            y_hat, sigmai, _ = model(xi, yi)
             x.extend(xi.cpu().numpy().tolist())
             y_gt.extend(yi.cpu().numpy().tolist())
             y_pred.extend(y_hat.cpu().numpy().tolist())
-    return x, y_gt, y_pred
+            sigma.extend(sigmai.cpu().numpy().tolist())
+
+    infr_data = np.concatenate([x, y_gt, y_pred, sigma], axis=1)
+    return infr_data
