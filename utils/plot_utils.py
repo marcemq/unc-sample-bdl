@@ -31,8 +31,11 @@ def plotCompleteData(data, dataT, title):
 
 def plotVarianceHelper(data, sigma_scale, color='blue', l1="", l2=""):
     sdata = data[np.argsort(data[:, 0])]
+    # Ground truth
     plt.scatter(sdata[:, 0], sdata[:, 1], marker ='x', color=color, s=10, label=l1)
+    # Prediction
     plt.scatter(sdata[:, 0], sdata[:, 2], marker ='x', color='green', s=10, label=l2)
+    # Estimated standard deviation
     y2 = sdata[:, 2] - sigma_scale*sdata[:, 3]
     y3 = sdata[:, 2] + sigma_scale*sdata[:, 3]
     plt.fill_between(sdata[:, 0], y2, y3, color='b', alpha=.1)
@@ -41,11 +44,13 @@ def plotWithVariance(data, dataT, sigma_scale, title):
     plt.figure(figsize=(7,7))
     data = data[np.argsort(data[:, 0])]
     idx = np.where(data[:,0] == 1)
+    # Predictions corresponding to seen data samples
     dataP1 = data[:idx[0][0]+1,:]
     dataP2 = data[idx[0][0]+1:,:]
     plotVarianceHelper(dataP1, sigma_scale)
-    plotVarianceHelper(dataT, sigma_scale, 'c', "Unseen data samples", "Predicted y")
     plotVarianceHelper(dataP2, sigma_scale)
+    # Predictions corresponding to unseen data samples
+    plotVarianceHelper(dataT, sigma_scale, 'c', "Unseen data samples", "Predicted y")
 
     plt.xlabel('x')
     plt.ylabel('f(x)')
