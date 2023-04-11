@@ -1,3 +1,4 @@
+import argparse
 import torch
 import sys
 sys.path.append('.')
@@ -12,7 +13,7 @@ BATCH_SIZE    = 40
 LEARNING_RATE = 1e-3
 EPOCHS        = 10000
 
-def main():
+def main(sigma_scale):
     # set fixed random seed
     torch.manual_seed(42)
 
@@ -30,8 +31,11 @@ def main():
     model.eval()
     infr_data = inference_deterministic_gaussian(model, device, batched_train_data)
     infr_dataT = inference_deterministic_gaussian(model, device, batched_test_data)
-    plotWithVariance(data=infr_data, dataT=infr_dataT, sigma_scale=1, title="Deterministic Gaussian model")
+    plotWithVariance(data=infr_data, dataT=infr_dataT, sigma_scale=sigma_scale, title="Deterministic Gaussian model")
     plt.show()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--sigma-scale', type=int, default=1, help='Sigma scale used to plot uncertainty band')
+    args = parser.parse_args()
+    main(args.sigma_scale)

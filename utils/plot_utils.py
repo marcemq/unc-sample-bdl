@@ -54,6 +54,6 @@ def plotWithVariance(data, dataT, sigma_scale, title):
 
     plt.xlabel('x')
     plt.ylabel('f(x)')
-    plt.title(r'$f(x) = x + 0.3\sin(2\pi(x+e)) + 0.3\sin(4\pi(x+e)) + e $', fontsize=12, color='gray')
+    plt.title(r'$f(x) = x + 0.3\sin(2\pi(x+e)) + 0.3\sin(4\pi(x+e)) + e $' + "\n sigma-scale=" + str(sigma_scale), fontsize=12, color='gray')
     plt.suptitle(title, fontsize=16, color='blue')
     plt.legend(loc=2)
