@@ -14,7 +14,7 @@ class MLP_variational(nn.Module):
             posterior_mu_init = 0,
             posterior_rho_init = -4,
         )
-        self.relu1 = nn.ReLU()
+        self.activation = nn.ReLU()
         # Linear rep layer: with prior standard normal dist
         self.linearRep2 = LinearReparameterization(
             in_features = hidden_dim,
@@ -30,18 +30,18 @@ class MLP_variational(nn.Module):
         '''Forward pass'''
         pred_ = []
         kl_ = []
-        # error here in size
-        # x here is a batch of inputs
         for mc_run in range(mc_its):
             kl_sum = 0
-            x, kl = self.linearRep1(x)
+            x_hidden, kl = self.linearRep1(x)
             kl_sum += kl
-            x = self.relu1(x)
-            pred, kl = self.linearRep2(x)
+            x_hidden = self.activation(x_hidden)
+            pred, kl = self.linearRep2(x_hidden)
+            # ASK
+            #x = pred??
             kl_sum += kl
             pred_.append(pred)
             kl_.append(kl_sum)
-        y_pred    = torch.mean(torch.stack(pred_), dim=0)
+        y_pred = torch.mean(torch.stack(pred_), dim=0)
         kl_loss = torch.mean(torch.stack(kl_), dim=0)
         # compute nll loss
         nll_loss = self.loss_fun(y_pred, y_gt)
@@ -52,7 +52,7 @@ class MLP_variational(nn.Module):
         # AR: verify this in bayesian torch side
         x, kl = self.linearRep1(x)
         kl_sum += kl
-        x = self.relu1(x)
+        x = self.activation(x)
         pred, kl = self.linearRep2(x)
         kl_sum += kl
         return pred, kl_sum
