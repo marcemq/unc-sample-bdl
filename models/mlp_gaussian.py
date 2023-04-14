@@ -1,9 +1,6 @@
 import torch
 from torch import nn
-
-def gaussianLikelihood(y, y_hat, sigma):
-    loss = (1/(2*sigma*sigma))*torch.square(y-y_hat) + 0.5* torch.log(sigma*sigma)
-    return torch.mean(loss)
+from utils.model_utils import gaussianLikelihood
 
 class MLP1(nn.Module):
     def __init__(self, input_size, hidden_dim, output_size):
