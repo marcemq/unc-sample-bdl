@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 def train_variational(model, device, train_data, val_data, LEARNING_RATE, EPOCHS,show_losses_plot=True, compute_pi=True, mc_its=10):
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, betas=(0.9,0.999))
 
-    list_loss_train = []
-    list_loss_val = []
+    training_losses = []
+    validation_losses = []
 
     # Training
     for epoch in range(EPOCHS):
@@ -18,8 +18,8 @@ def train_variational(model, device, train_data, val_data, LEARNING_RATE, EPOCHS
         model.train()
         for batch_idx, (x, y_gt) in enumerate(train_data):
             model.zero_grad()
-            x = x.to(device).reshape((len(x),1,-1))
-            y_gt = y_gt.to(device).reshape((len(y_gt),1, -1))
+            x = x.to(device).reshape((len(x),-1))
+            y_gt = y_gt.to(device).reshape((len(y_gt), -1))
 
             # forward pass and losses compute
             pred, nll_loss, kl_loss = model(x, y_gt, mc_its)
@@ -35,7 +35,7 @@ def train_variational(model, device, train_data, val_data, LEARNING_RATE, EPOCHS
             # compute gradients and update weights
             loss.backward()
             optimizer.step()
-        list_loss_train.append(error/M)
+        training_losses.append(error/M)
 
         #validation
         error_val = 0
@@ -52,31 +52,33 @@ def train_variational(model, device, train_data, val_data, LEARNING_RATE, EPOCHS
                     pi = 1/M_val
                 loss = pi*kl_loss + nll_loss
                 error_val += loss.detach().item()
-            list_loss_val.append(error/M_val)
+            validation_losses.append(error/M_val)
 
         if (epoch+1) % 100 == 0:
-            print(f"[{epoch+1}] Training loss: {list_loss_train[epoch]:.4f}\t Validation loss: {list_loss_val[epoch]:.4f}")
+            print(f"[{epoch+1}] Training loss: {training_losses[epoch]:.4f}\t Validation loss: {validation_losses[epoch]:.4f}")
 
-    plot_losses(list_loss_train, list_loss_val)
+    plot_losses(training_losses, validation_losses)
     if show_losses_plot:
         plt.show()
     plt.close()
 
 def inference_variational(model, device, test_data, MC_ITS):
     x, y_gt, y_pred = [], [], []
-    for batch_idx, (xtest, ytest_gt) in enumerate(test_data):
-        pred_sum = 0
-        for mc_run in range(MC_ITS):
-            xtest = xtest.to(device).reshape((len(xtest),-1))
-            ytest_gt = ytest_gt.reshape((len(ytest_gt),-1))
-            pred, kl = model.predict(xtest)
-            pred_sum += pred
-        x.extend(xtest.cpu().numpy().tolist())
-        y_gt.extend(ytest_gt.cpu().numpy().tolist())
-        y_pred.extend((pred_sum.detach()/MC_ITS).cpu().numpy().tolist())
-        # AKS should I comput the sdt fro the prediction and reporte it bacK?
-        # TODO: compute mu and sdt epistemic to be drawn
-        infr_data = np.concatenate([x, y_gt, y_pred], axis=1)
+    with torch.no_grad():
+        for batch_idx, (xtest, ytest_gt) in enumerate(test_data):
+            pred_sum = 0
+            for mc_run in range(MC_ITS):
+                xtest = xtest.to(device).reshape((len(xtest),-1))
+                ytest_gt = ytest_gt.reshape((len(ytest_gt),-1))
+                pred, kl = model.predict(xtest)
+                pred_sum += pred
+            x.extend(xtest.cpu().numpy().tolist())
+            y_gt.extend(ytest_gt.cpu().numpy().tolist())
+            y_pred.extend((pred_sum.detach()/MC_ITS).cpu().numpy().tolist())
+            # TODO: compute epistemic var.
+            #epistemic_var.extend(torch.var(pred_sum).detach().cpu().numpy().tolist())
+
+    infr_data = np.concatenate([x, y_gt, y_pred], axis=1)
     return infr_data
 
 def train_deterministic(model, device, train_data, val_data, LEARNING_RATE, EPOCHS, show_losses_plot=True):

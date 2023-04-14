@@ -36,8 +36,6 @@ class MLP_variational(nn.Module):
             kl_sum += kl
             x_hidden = self.activation(x_hidden)
             pred, kl = self.linearRep2(x_hidden)
-            # ASK
-            #x = pred??
             kl_sum += kl
             pred_.append(pred)
             kl_.append(kl_sum)
