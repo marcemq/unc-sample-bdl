@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 
 BATCH_SIZE = 40
 LEARNING_RATE = 1e-3
-EPOCHS = 2000
+EPOCHS = 10000
 MC_ITS = 20
 
 def main():
@@ -30,7 +30,7 @@ def main():
     model.eval()
     infr_data = inference_variational(model, device, batched_train_data, MC_ITS)
     infr_dataT = inference_variational(model, device, batched_test_data, MC_ITS)
-    plotCompleteData(data=infr_data, dataT=infr_dataT, title="Variational model")
+    plotWithVariance(data=infr_data, dataT=infr_dataT, sigma_scale=1, title="Variational model")
     plt.show()
 
 if __name__ == "__main__":

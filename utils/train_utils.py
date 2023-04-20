@@ -63,22 +63,24 @@ def train_variational(model, device, train_data, val_data, LEARNING_RATE, EPOCHS
     plt.close()
 
 def inference_variational(model, device, test_data, MC_ITS):
-    x, y_gt, y_pred = [], [], []
+    x, y_gt, y_pred, epistemic_var = [], [], [], []
     with torch.no_grad():
         for batch_idx, (xtest, ytest_gt) in enumerate(test_data):
             pred_sum = 0
+            mc_preds = torch.empty((xtest.shape[0], 0), dtype=torch.float32)
             for mc_run in range(MC_ITS):
                 xtest = xtest.to(device).reshape((len(xtest),-1))
                 ytest_gt = ytest_gt.reshape((len(ytest_gt),-1))
                 pred, kl = model.predict(xtest)
+                mc_preds = torch.cat((mc_preds, pred), dim=1)
                 pred_sum += pred
+
             x.extend(xtest.cpu().numpy().tolist())
             y_gt.extend(ytest_gt.cpu().numpy().tolist())
             y_pred.extend((pred_sum.detach()/MC_ITS).cpu().numpy().tolist())
-            # TODO: compute epistemic var.
-            #epistemic_var.extend(torch.var(pred_sum).detach().cpu().numpy().tolist())
+            epistemic_var.extend(torch.var(mc_preds, dim=1, keepdim=True).detach().cpu().numpy().tolist())
 
-    infr_data = np.concatenate([x, y_gt, y_pred], axis=1)
+    infr_data = np.concatenate([x, y_gt, y_pred, epistemic_var], axis=1)
     return infr_data
 
 def train_deterministic(model, device, train_data, val_data, LEARNING_RATE, EPOCHS, show_losses_plot=True):
